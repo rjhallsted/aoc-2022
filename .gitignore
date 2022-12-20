@@ -6,3 +6,4 @@ project/project/
 project/.bloop/
 project/target/
 target/
+.env
