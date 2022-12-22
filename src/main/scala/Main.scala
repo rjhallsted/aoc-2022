@@ -3,12 +3,12 @@ import zio.http._
 import scala.io.Source
 
 object Main extends ZIOAppDefault {
-  val day = 7
+  val day = 8
 
   val program = for {
     input <- AOCClient.getInput(day)
-    // input <- ZIO.succeed(Source.fromFile("src/main/scala/inputs/sample7.txt").mkString)
-  } yield Day7.main(input)
+    // input <- ZIO.succeed(Source.fromFile("src/main/scala/inputs/sample8.txt").mkString)
+  } yield Day8.main(input)
 
   override val run = program.provideLayer(Client.default)
 }
