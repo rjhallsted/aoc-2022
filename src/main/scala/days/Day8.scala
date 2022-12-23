@@ -2,95 +2,80 @@ object Day8 extends Day {
   val day = 8
 
   def matrixFromString(input: String): Array[Array[Int]] = {
-    input.split("\n").map(_.toCharArray.map(_.toInt))
+    input.split("\n").map(_.toCharArray.map(_.toString.toInt))
   }
 
-  def newVisibilityMatrix(height: Int, width: Int): Array[Array[Boolean]] = {
-    (0 until height).toArray.map(_ => (0 until width).map(_ => false).toArray)
+  def newViewDistanceMatrix(height: Int, width: Int): Array[Array[Int]] = {
+    (0 until height).toArray.map(_ => (0 until width).map(_ => 1).toArray)
   }
 
-  def markVisibleTrees(
+  def calcViewDistance(
       trees: Array[Array[Int]],
-      visible: Array[Array[Boolean]]
+      viewDistance: Array[Array[Int]]
   ): Unit = {
-    def fromLeft(): Unit = {
-        visible.foreach(r => r(0) = true)
-        
-        for (r <- 0 until visible.size) {
-            var height = trees(r)(0)
-            for (c <- 1 until visible(0).size) {
-                if (trees(r)(c) > height) {
-                    height = trees(r)(c)
-                    visible(r)(c) = true
-                }
+        val height = trees.size
+        val width = trees(0).size
+
+        def walkUp(r: Int, c: Int, viewingHeight: Int): Int = {
+            for (vr <- r-1 to 0 by -1) {
+                if (trees(vr)(c) >= viewingHeight)
+                    return r - vr
+            }
+
+            return List(r, 0).max
+        }
+
+        def walkRight(r: Int, c: Int, viewingHeight: Int): Int = {
+            for (vc <- c+1 until width) {
+                if (trees(r)(vc) >= viewingHeight)
+                    return vc -c
+            }
+
+            return List(width-1 - c, 0).max
+        }
+
+        def walkDown(r: Int, c: Int, viewingHeight: Int): Int = {
+            for (vr <- r+1 until height) {
+                if (trees(vr)(c) >= viewingHeight)
+                    return vr - r
+            }
+
+            return List(height-1 - r, 0).max
+        }
+
+        def walkLeft(r: Int, c: Int, viewingHeight: Int): Int = {
+            for (vc <- c-1 to 0 by -1) {
+                if (trees(r)(vc) >= viewingHeight)
+                    return c - vc
+            }
+
+            return List(c, 0).max
+        }
+
+        for (r <- 0 until height) {
+            for (c <- 0 until width) {
+                val thisTree = trees(r)(c)
+                viewDistance(r)(c) *= walkUp(r, c, thisTree)
+                viewDistance(r)(c) *= walkRight(r, c, thisTree)
+                viewDistance(r)(c) *= walkDown(r, c, thisTree)
+                viewDistance(r)(c) *= walkLeft(r, c, thisTree)
             }
         }
-    }
-
-    def fromTop(): Unit = {
-        for (c <- 0 until visible(0).size) {
-            visible(0)(c) = true
-        }
-
-        for (c <- 0 until visible(0).size) {
-            var height = trees(0)(c)
-            for (r <- 1 until visible.size) {
-                if (trees(r)(c) > height) {
-                    height = trees(r)(c)
-                    visible(r)(c) = true
-                }
-            }
-        }
-    }
-
-    def fromRight(): Unit = {
-        visible.foreach(r => r(r.size - 1) = true)
-        
-        for (r <- 0 until visible.size) {
-            var height = trees(r)(trees(r).size - 1)
-            for (c <- visible(0).size-2 to 0 by -1) {
-                if (trees(r)(c) > height) {
-                    height = trees(r)(c)
-                    visible(r)(c) = true
-                }
-            }
-        }
-    }
-
-    def fromBottom(): Unit = {
-        for (c <- 0 until visible(0).size) {
-            visible(visible.size-1)(c) = true
-        }
-
-        for (c <- 0 until visible(0).size) {
-            var height = trees(visible.size-1)(c)
-            for (r <- visible.size-2 to 0 by -1) {
-                if (trees(r)(c) > height) {
-                    height = trees(r)(c)
-                    visible(r)(c) = true
-                }
-            }
-        }
-    }
-
-    fromLeft()
-    fromBottom()
-    fromRight()
-    fromTop()
   }
 
   def main(input: String): Unit = {
     val trees = matrixFromString(input)
-    val visible = newVisibilityMatrix(trees.size, trees.head.size)
+    val viewDistance = newViewDistanceMatrix(trees.size, trees.head.size)
 
-    markVisibleTrees(trees, visible)
-    val visibleCount = visible
-      .map(_.map(_ match {
-        case true  => 1
-        case false => 0
-      }).sum)
-      .sum
+    // trees.foreach(r => println(r.toList))
+    // println("")
 
-    println(visibleCount)
+    calcViewDistance(trees, viewDistance)
+
+    val maxVisibility = viewDistance.flatten.max
+
+    // viewDistance.foreach(r => println(r.toList))
+
+    println(maxVisibility)
   }
 }
