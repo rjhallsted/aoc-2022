@@ -3,7 +3,7 @@ import zio.http._
 import scala.io.Source
 
 object Main extends ZIOAppDefault {
-  val dayProgram = Day9
+  val dayProgram = Day10
 
   val program = for {
     input <- AOCClient.getInput(dayProgram.day)
